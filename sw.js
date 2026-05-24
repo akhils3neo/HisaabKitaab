@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hisaab-kitaab-v2';
+const CACHE_NAME = 'hisaab-kitaab-v3';
 const urlsToCache = [
   './',
   './index.html',
