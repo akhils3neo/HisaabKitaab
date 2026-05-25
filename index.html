@@ -2253,7 +2253,7 @@
             y += 6; if (y > 240) { doc.addPage(); y = 30; }
 
             // Summary box
-            var summaryH = qrDataUrl ? 52 : 38;
+            var summaryH = 38;
             doc.setDrawColor(226,232,240); doc.setFillColor(248,250,252);
             doc.roundedRect(margin, y, contentWidth, summaryH, 4, 4, 'FD');
             doc.setDrawColor(124,58,237); doc.setLineWidth(0.8);
@@ -2272,10 +2272,11 @@
             doc.text(formatCurrencyPDF(finalBalance), margin+contentWidth/2+35, y+17);
             doc.setTextColor(100,100,100); doc.setFont('helvetica','italic'); doc.setFontSize(8);
             doc.text('Note: Positive balance means others owe you. Negative balance means you owe others.', margin+5, y+32);
+            y += summaryH + 6;
 
             // QR Code + Pay Now
             if (qrDataUrl && totalOutstanding > 0) {
-                y += 8; if (y > 240) { doc.addPage(); y = 30; }
+                if (y > 240) { doc.addPage(); y = 30; }
                 var upiPayLink = 'https://akhils3neo.github.io/HisaabKitaab/pay.html?pa=' + encodeURIComponent(appSettings.upiId) +
                                  '&pn=' + encodeURIComponent(appSettings.upiName || appSettings.upiId) +
                                  '&am=' + totalOutstanding.toFixed(2) +
@@ -2285,16 +2286,13 @@
                 doc.roundedRect(margin, y, contentWidth, boxH, 4, 4, 'FD');
                 doc.setDrawColor(16,185,129); doc.setLineWidth(0.8);
                 doc.line(margin, y, margin+contentWidth, y);
-                // Clickable PAY NOW button (left side)
                 var btnW = 80; var btnH = 14; var btnX = margin+5; var btnY = y+7;
                 doc.setFillColor(16,185,129);
                 doc.roundedRect(btnX, btnY, btnW, btnH, 3, 3, 'F');
                 doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
                 doc.textWithLink('PAY NOW  ' + formatCurrencyPDF(totalOutstanding), btnX + btnW/2, btnY+9.5, { align:'center', url: upiPayLink });
-                // UPI ID below button
                 doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
                 doc.text('UPI: ' + appSettings.upiId, btnX, btnY+btnH+5);
-                // QR code (right side)
                 doc.addImage(qrDataUrl, 'PNG', margin+contentWidth-26, y+1, 24, 24);
                 doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(16,185,129);
                 doc.text('Scan to Pay', margin+contentWidth-26+12, y+27, {align:'center'});
@@ -2413,10 +2411,11 @@
             doc.text('Green stripe = Fully settled  |  Red = Amount still due  |  "I Owe" = You owe them  |  "Owed Me" = They owe you', margin+5, y);
             y += 6;
             doc.text('Note: Positive net outstanding means money is owed to you. Negative means you owe others.', margin+5, y);
+            y += 12;
 
             // QR Code + Pay Now
             if (qrDataUrl && totalOutstanding > 0) {
-                y += 10; if (y > 240) { doc.addPage(); y = 30; }
+                if (y > 240) { doc.addPage(); y = 30; }
                 var upiPayLink = 'https://akhils3neo.github.io/HisaabKitaab/pay.html?pa=' + encodeURIComponent(appSettings.upiId) +
                                  '&pn=' + encodeURIComponent(appSettings.upiName || appSettings.upiId) +
                                  '&am=' + totalOutstanding.toFixed(2) +
