@@ -1185,14 +1185,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script>
         // SVG Icons
         const ICONS = {
             view: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>',
             payment: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
             edit: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>',
-            delete: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>'
+            delete: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>',
+            paynow: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>'
         };
 
         var debts = JSON.parse(localStorage.getItem('hisaabkitaab_debts')) || [];
@@ -1987,8 +1988,23 @@
             appSettings.upiId   = document.getElementById('settingsUpiId').value.trim();
             appSettings.upiName = document.getElementById('settingsUpiName').value.trim();
             localStorage.setItem('hisaabkitaab_settings', JSON.stringify(appSettings));
-            closeModal('settingsModal');
             showToast('Settings saved successfully');
+            renderDebts(); // refresh to show/hide Pay Now buttons
+        }
+
+        function payNow(debtId) {
+            var debt = debts.find(function(d) { return d.id === debtId; });
+            if (!debt || !appSettings.upiId) return;
+            var remaining = calculateRemaining(debt);
+            if (remaining <= 0) { showToast('This transaction is already settled', 'error'); return; }
+            var creditorName = getCreditorName(debt.creditorId);
+            var note = (debt.notes || 'HisaabKitaab') + '-' + creditorName;
+            var upiLink = 'upi://pay?pa=' + encodeURIComponent(appSettings.upiId) +
+                          '&pn=' + encodeURIComponent(appSettings.upiName || appSettings.upiId) +
+                          '&am=' + remaining.toFixed(2) +
+                          '&cu=INR' +
+                          '&tn=' + encodeURIComponent(note.substring(0, 50));
+            window.location.href = upiLink;
         }
 
         function previewUpiQR() {
@@ -1997,12 +2013,37 @@
             var preview = document.getElementById('upiPreview');
             if (!upiId) { preview.style.display = 'none'; return; }
             preview.style.display = 'block';
-            var canvas = document.getElementById('upiQrPreviewCanvas');
-            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
             var upiLink = 'upi://pay?pa=' + encodeURIComponent(upiId) +
                           '&pn=' + encodeURIComponent(upiName || upiId) +
                           '&am=100&cu=INR&tn=HisaabKitaab';
-            QRCode.toCanvas(canvas, upiLink, { width: 120, margin: 1 }, function(err) {});
+            var canvas = document.getElementById('upiQrPreviewCanvas');
+            drawQRToCanvas(upiLink, canvas, 120);
+        }
+
+        // Draw QR code onto a canvas using qrcode-generator library
+        function drawQRToCanvas(text, canvas, size) {
+            try {
+                var qr = qrcode(0, 'M');
+                qr.addData(text);
+                qr.make();
+                var moduleCount = qr.getModuleCount();
+                var cellSize = Math.floor(size / moduleCount);
+                var actualSize = cellSize * moduleCount;
+                canvas.width = actualSize;
+                canvas.height = actualSize;
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, actualSize, actualSize);
+                ctx.fillStyle = '#000000';
+                for (var row = 0; row < moduleCount; row++) {
+                    for (var col = 0; col < moduleCount; col++) {
+                        if (qr.isDark(row, col)) {
+                            ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                        }
+                    }
+                }
+                return true;
+            } catch(e) { return false; }
         }
 
         // Generate QR as data URL for PDF embedding
@@ -2010,15 +2051,15 @@
             var upiId   = appSettings.upiId;
             var upiName = appSettings.upiName || upiId;
             if (!upiId) { callback(null); return; }
-            var upiLink = 'upi://pay?pa=' + encodeURIComponent(upiId) +
-                          '&pn=' + encodeURIComponent(upiName) +
-                          '&am=' + (amount > 0 ? amount.toFixed(2) : '') +
-                          '&cu=INR&tn=' + encodeURIComponent(note || 'HisaabKitaab');
-            var canvas = document.createElement('canvas');
-            QRCode.toCanvas(canvas, upiLink, { width: 120, margin: 1 }, function(err) {
-                if (err) { callback(null); return; }
-                callback(canvas.toDataURL('image/png'));
-            });
+            try {
+                var upiLink = 'upi://pay?pa=' + encodeURIComponent(upiId) +
+                              '&pn=' + encodeURIComponent(upiName) +
+                              '&am=' + (amount > 0 ? amount.toFixed(2) : '') +
+                              '&cu=INR&tn=' + encodeURIComponent((note || 'HisaabKitaab').substring(0, 50));
+                var canvas = document.createElement('canvas');
+                var ok = drawQRToCanvas(upiLink, canvas, 150);
+                callback(ok ? canvas.toDataURL('image/png') : null);
+            } catch(e) { callback(null); }
         }
 
         // ── Date Range Toggle ─────────────────────────────────────
@@ -2232,14 +2273,31 @@
             doc.setTextColor(100,100,100); doc.setFont('helvetica','italic'); doc.setFontSize(8);
             doc.text('Note: Positive balance means others owe you. Negative balance means you owe others.', margin+5, y+32);
 
-            // QR Code
+            // QR Code + Pay Now
             if (qrDataUrl && totalOutstanding > 0) {
-                var qrY = y + 38;
-                doc.addImage(qrDataUrl, 'PNG', margin + contentWidth - 36, qrY - 35, 32, 32);
-                doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(124, 58, 237);
-                doc.text('Scan to Pay', margin + contentWidth - 36 + 16, qrY, { align: 'center' });
-                doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
-                doc.text('(Amt pre-filled, editable)', margin + contentWidth - 36 + 16, qrY + 4, { align: 'center' });
+                y += 8; if (y > 240) { doc.addPage(); y = 30; }
+                var upiPayLink = 'https://akhils3neo.github.io/HisaabKitaab/pay.html?pa=' + encodeURIComponent(appSettings.upiId) +
+                                 '&pn=' + encodeURIComponent(appSettings.upiName || appSettings.upiId) +
+                                 '&am=' + totalOutstanding.toFixed(2) +
+                                 '&cu=INR&tn=HisaabKitaab';
+                var boxH = 28;
+                doc.setDrawColor(16,185,129); doc.setFillColor(240,253,244);
+                doc.roundedRect(margin, y, contentWidth, boxH, 4, 4, 'FD');
+                doc.setDrawColor(16,185,129); doc.setLineWidth(0.8);
+                doc.line(margin, y, margin+contentWidth, y);
+                // Clickable PAY NOW button (left side)
+                var btnW = 80; var btnH = 14; var btnX = margin+5; var btnY = y+7;
+                doc.setFillColor(16,185,129);
+                doc.roundedRect(btnX, btnY, btnW, btnH, 3, 3, 'F');
+                doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+                doc.textWithLink('PAY NOW  ' + formatCurrencyPDF(totalOutstanding), btnX + btnW/2, btnY+9.5, { align:'center', url: upiPayLink });
+                // UPI ID below button
+                doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
+                doc.text('UPI: ' + appSettings.upiId, btnX, btnY+btnH+5);
+                // QR code (right side)
+                doc.addImage(qrDataUrl, 'PNG', margin+contentWidth-26, y+1, 24, 24);
+                doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(16,185,129);
+                doc.text('Scan to Pay', margin+contentWidth-26+12, y+27, {align:'center'});
             }
 
             addFooter(doc, pageWidth, margin, contentWidth);
@@ -2356,24 +2414,31 @@
             y += 6;
             doc.text('Note: Positive net outstanding means money is owed to you. Negative means you owe others.', margin+5, y);
 
-            // QR Code
+            // QR Code + Pay Now
             if (qrDataUrl && totalOutstanding > 0) {
-                y += 10; if (y > 250) { doc.addPage(); y = 30; }
-                doc.setDrawColor(226,232,240); doc.setFillColor(248,250,252);
-                doc.roundedRect(margin, y, contentWidth, 46, 4, 4, 'FD');
-                doc.setDrawColor(124,58,237); doc.setLineWidth(0.8); doc.line(margin, y, margin+contentWidth, y);
-                doc.setTextColor(15,23,42); doc.setFontSize(10); doc.setFont('helvetica','bold');
-                doc.text('PAY VIA UPI', margin+5, y+9);
-                doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(100,100,100);
-                doc.text('Scan the QR code with any UPI app (GPay, PhonePe, Paytm) to pay.', margin+5, y+17);
-                doc.text('Outstanding amount is pre-filled — you can change it before paying.', margin+5, y+24);
-                doc.setTextColor(124,58,237); doc.setFont('helvetica','bold'); doc.setFontSize(9);
-                doc.text('Outstanding: ' + formatCurrencyPDF(totalOutstanding), margin+5, y+33);
-                doc.setTextColor(100,100,100); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
-                doc.text('UPI ID: ' + appSettings.upiId, margin+5, y+40);
-                doc.addImage(qrDataUrl, 'PNG', margin+contentWidth-38, y+4, 34, 34);
-                doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(124,58,237);
-                doc.text('Scan to Pay', margin+contentWidth-38+17, y+42, {align:'center'});
+                y += 10; if (y > 240) { doc.addPage(); y = 30; }
+                var upiPayLink = 'https://akhils3neo.github.io/HisaabKitaab/pay.html?pa=' + encodeURIComponent(appSettings.upiId) +
+                                 '&pn=' + encodeURIComponent(appSettings.upiName || appSettings.upiId) +
+                                 '&am=' + totalOutstanding.toFixed(2) +
+                                 '&cu=INR&tn=HisaabKitaab';
+                var boxH = 28;
+                doc.setDrawColor(16,185,129); doc.setFillColor(240,253,244);
+                doc.roundedRect(margin, y, contentWidth, boxH, 4, 4, 'FD');
+                doc.setDrawColor(16,185,129); doc.setLineWidth(0.8);
+                doc.line(margin, y, margin+contentWidth, y);
+                // Clickable PAY NOW button (left side)
+                var btnW = 80; var btnH = 14; var btnX = margin+5; var btnY = y+7;
+                doc.setFillColor(16,185,129);
+                doc.roundedRect(btnX, btnY, btnW, btnH, 3, 3, 'F');
+                doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+                doc.textWithLink('PAY NOW  ' + formatCurrencyPDF(totalOutstanding), btnX + btnW/2, btnY+9.5, { align:'center', url: upiPayLink });
+                // UPI ID below button
+                doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
+                doc.text('UPI: ' + appSettings.upiId, btnX, btnY+btnH+5);
+                // QR code (right side)
+                doc.addImage(qrDataUrl, 'PNG', margin+contentWidth-26, y+1, 24, 24);
+                doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(16,185,129);
+                doc.text('Scan to Pay', margin+contentWidth-26+12, y+27, {align:'center'});
             }
 
             addFooter(doc, pageWidth, margin, contentWidth);
