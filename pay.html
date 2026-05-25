@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hisaab Kitaab - Pay Now</title>
+    <style>
+        body { font-family: sans-serif; display: flex; align-items: center; 
+               justify-content: center; min-height: 100vh; margin: 0;
+               background: #f1f5f9; }
+        .card { background: white; border-radius: 16px; padding: 32px; 
+                text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .btn { background: #10b981; color: white; border: none; 
+               padding: 14px 32px; border-radius: 10px; font-size: 1.1rem; 
+               font-weight: 700; cursor: pointer; text-decoration: none;
+               display: inline-block; margin-top: 16px; }
+        .amount { font-size: 2rem; font-weight: 800; color: #7c3aed; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div style="font-size:2rem;">💳</div>
+        <h2>Hisaab Kitaab Payment</h2>
+        <div class="amount" id="amt"></div>
+        <p id="msg" style="color:#64748b; margin-top:8px;"></p>
+        <a class="btn" id="payBtn">Opening UPI App...</a>
+    </div>
+    <script>
+        var params = new URLSearchParams(window.location.search);
+        var pa  = params.get('pa')  || '';
+        var pn  = params.get('pn')  || '';
+        var am  = params.get('am')  || '';
+        var tn  = params.get('tn')  || 'HisaabKitaab';
+
+        document.getElementById('amt').textContent = am ? '₹' + parseFloat(am).toLocaleString('en-IN') : '';
+        document.getElementById('msg').textContent = 'Pay to: ' + (pn || pa);
+
+        var upiUrl = 'upi://pay?pa=' + encodeURIComponent(pa) +
+                     '&pn=' + encodeURIComponent(pn) +
+                     '&am=' + am +
+                     '&cu=INR' +
+                     '&tn=' + encodeURIComponent(tn);
+
+        document.getElementById('payBtn').href = upiUrl;
+
+        // Auto-redirect after 1 second
+        setTimeout(function() {
+            window.location.href = upiUrl;
+        }, 1000);
+    </script>
+</body>
+</html>
