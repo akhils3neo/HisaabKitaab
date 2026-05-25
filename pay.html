@@ -4,36 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hisaab Kitaab - Pay Now</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; display: flex; align-items: center; 
-               justify-content: center; min-height: 100vh; margin: 0;
-               background: #f1f5f9; }
-        .card { background: white; border-radius: 16px; padding: 32px; 
-                text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .btn { background: #10b981; color: white; border: none; 
-               padding: 14px 32px; border-radius: 10px; font-size: 1.1rem; 
-               font-weight: 700; cursor: pointer; text-decoration: none;
-               display: inline-block; margin-top: 16px; }
-        .amount { font-size: 2rem; font-weight: 800; color: #7c3aed; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px;
+        }
+        .card {
+            background: white; border-radius: 24px; padding: 40px 32px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+            max-width: 380px; width: 100%;
+        }
+        .logo {
+            width: 56px; height: 56px; background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; font-size: 1.6rem;
+        }
+        .app-name { font-size: 0.85rem; color: #94a3b8; font-weight: 600; margin-bottom: 24px; letter-spacing: 0.05em; text-transform: uppercase; }
+        .label { font-size: 0.9rem; color: #64748b; font-weight: 500; margin-bottom: 6px; }
+        .amount {
+            font-size: 2.8rem; font-weight: 800; color: #7c3aed;
+            margin-bottom: 8px; line-height: 1;
+        }
+        .payee { font-size: 1rem; color: #0f172a; font-weight: 600; margin-bottom: 6px; }
+        .upi-id { font-size: 0.8rem; color: #94a3b8; margin-bottom: 28px; }
+        .note { font-size: 0.8rem; color: #94a3b8; background: #f8fafc; padding: 8px 12px; border-radius: 8px; margin-bottom: 28px; }
+        .btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white; border: none; padding: 16px 32px;
+            border-radius: 14px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; text-decoration: none; display: block;
+            width: 100%; box-shadow: 0 4px 15px rgba(16,185,129,0.35);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(16,185,129,0.3); }
+        .apps { display: flex; justify-content: center; gap: 12px; margin-top: 20px; }
+        .app-tag {
+            font-size: 0.72rem; color: #64748b; background: #f1f5f9;
+            padding: 4px 10px; border-radius: 20px; font-weight: 600;
+        }
+        .status { font-size: 0.8rem; color: #10b981; margin-top: 16px; font-weight: 600; min-height: 20px; }
+        .divider { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+        .footer { font-size: 0.72rem; color: #cbd5e1; margin-top: 24px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <div style="font-size:2rem;">💳</div>
-        <h2>Hisaab Kitaab Payment</h2>
-        <div class="amount" id="amt"></div>
-        <p id="msg" style="color:#64748b; margin-top:8px;"></p>
-        <a class="btn" id="payBtn">Opening UPI App...</a>
+        <div class="logo">💳</div>
+        <div class="app-name">Hisaab Kitaab</div>
+
+        <div class="label">Amount Due</div>
+        <div class="amount" id="amt">—</div>
+
+        <div class="payee" id="payee"></div>
+        <div class="upi-id" id="upiId"></div>
+        <div class="note" id="note"></div>
+
+        <a class="btn" id="payBtn" href="#">
+            Pay Now
+        </a>
+
+        <div class="apps">
+            <span class="app-tag">GPay</span>
+            <span class="app-tag">PhonePe</span>
+            <span class="app-tag">Paytm</span>
+            <span class="app-tag">BHIM</span>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <hr class="divider">
+        <div class="footer">Amount is pre-filled but editable before payment</div>
     </div>
+
     <script>
         var params = new URLSearchParams(window.location.search);
-        var pa  = params.get('pa')  || '';
-        var pn  = params.get('pn')  || '';
-        var am  = params.get('am')  || '';
-        var tn  = params.get('tn')  || 'HisaabKitaab';
+        var pa = params.get('pa') || '';
+        var pn = params.get('pn') || '';
+        var am = params.get('am') || '';
+        var tn = params.get('tn') || 'HisaabKitaab';
 
-        document.getElementById('amt').textContent = am ? '₹' + parseFloat(am).toLocaleString('en-IN') : '';
-        document.getElementById('msg').textContent = 'Pay to: ' + (pn || pa);
+        if (am) {
+            document.getElementById('amt').textContent = '₹' + parseFloat(am).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        if (pn) document.getElementById('payee').textContent = 'Pay to: ' + pn;
+        if (pa) document.getElementById('upiId').textContent = pa;
+        if (tn && tn !== 'HisaabKitaab') document.getElementById('note').textContent = 'Note: ' + tn;
+        else document.getElementById('note').style.display = 'none';
 
         var upiUrl = 'upi://pay?pa=' + encodeURIComponent(pa) +
                      '&pn=' + encodeURIComponent(pn) +
@@ -41,12 +101,27 @@
                      '&cu=INR' +
                      '&tn=' + encodeURIComponent(tn);
 
-        document.getElementById('payBtn').href = upiUrl;
+        var btn = document.getElementById('payBtn');
+        btn.href = upiUrl;
 
-        // Auto-redirect after 1 second
-        setTimeout(function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('status').textContent = 'Opening UPI app...';
             window.location.href = upiUrl;
-        }, 1000);
+            // If app doesn't open in 2s, show fallback message
+            setTimeout(function() {
+                document.getElementById('status').textContent = 'If no app opened, tap the button again.';
+                document.getElementById('status').style.color = '#f59e0b';
+            }, 2000);
+        });
+
+        // Auto-attempt on load
+        setTimeout(function() {
+            if (pa && am) {
+                document.getElementById('status').textContent = 'Opening UPI app...';
+                window.location.href = upiUrl;
+            }
+        }, 800);
     </script>
 </body>
 </html>
