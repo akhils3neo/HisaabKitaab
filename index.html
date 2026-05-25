@@ -1987,6 +1987,7 @@
             appSettings.upiId   = document.getElementById('settingsUpiId').value.trim();
             appSettings.upiName = document.getElementById('settingsUpiName').value.trim();
             localStorage.setItem('hisaabkitaab_settings', JSON.stringify(appSettings));
+            closeModal('settingsModal');
             showToast('Settings saved successfully');
         }
 
