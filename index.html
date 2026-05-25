@@ -815,6 +815,9 @@
                 <button class="tab" onclick="switchTab(event, 'analytics')">
                     <span style="margin-right:6px;">&#128200;</span>Analytics
                 </button>
+                <button class="tab" onclick="switchTab(event, 'settings')">
+                    <span style="margin-right:6px;">&#9881;&#65039;</span>Settings
+                </button>
             </div>
 
             <div id="debts-tab" class="tab-content active">
@@ -894,6 +897,61 @@
                 </div>
             </div>
 
+            <div id="settings-tab" class="tab-content">
+                <div class="card-header">
+                    <span class="card-title">
+                        <span class="card-title-icon">&#9881;&#65039;</span>
+                        App Settings
+                    </span>
+                </div>
+                <div style="padding: 28px;">
+                    <!-- UPI Settings -->
+                    <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border); margin-bottom: 24px;">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                            <div style="width:40px;height:40px;background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;">&#128247;</div>
+                            <div>
+                                <div style="font-weight:700;font-size:1rem;color:var(--text);">UPI Payment Settings</div>
+                                <div style="font-size:0.8rem;color:var(--text-muted);">Used to generate QR code in PDF reports so recipients can pay directly</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Your UPI ID</label>
+                                <input type="text" class="form-control" id="settingsUpiId" placeholder="e.g. yourname@okicici" oninput="previewUpiQR()">
+                                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:5px;">Format: mobilenumber@upi, name@okicici, name@ybl etc.</div>
+                            </div>
+                            <div class="form-group">
+                                <label>Your Display Name</label>
+                                <input type="text" class="form-control" id="settingsUpiName" placeholder="e.g. Rahul Sharma" oninput="previewUpiQR()">
+                                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:5px;">Name shown in UPI app when recipient scans</div>
+                            </div>
+                        </div>
+                        <div id="upiPreview" style="display:none; margin-top:16px; padding:16px; background:white; border-radius:var(--radius); border:1px solid var(--border); text-align:center;">
+                            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;">QR Preview (sample with ₹100)</div>
+                            <canvas id="upiQrPreviewCanvas" style="border-radius:8px;"></canvas>
+                            <div style="font-size:0.75rem;color:var(--success);margin-top:8px;font-weight:600;">✓ QR will be embedded in PDF reports</div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:16px;">
+                            <span>&#128190;</span> Save Settings
+                        </button>
+                    </div>
+
+                    <!-- PIN Settings -->
+                    <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: var(--radius-lg); padding: 24px; border: 1px solid var(--border);">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                            <div style="width:40px;height:40px;background:linear-gradient(135deg,#10b981,#059669);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;">&#128274;</div>
+                            <div>
+                                <div style="font-weight:700;font-size:1rem;color:var(--text);">Security PIN</div>
+                                <div style="font-size:0.8rem;color:var(--text-muted);">PIN protects edits, deletes and payments</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="openSetPinModal()">
+                            <span>&#128272;</span> Change PIN
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="export-section">
                 <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%;">
                     <select class="filter-select" id="exportFilter">
@@ -907,8 +965,17 @@
                         <input type="checkbox" id="summaryModeFilter" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;">
                         Summary only
                     </label>
+                    <label style="display:inline-flex;align-items:center;gap:7px;font-size:0.85rem;font-weight:600;color:var(--text-secondary);cursor:pointer;user-select:none;">
+                        <input type="checkbox" id="dateRangeToggle" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer;" onchange="toggleDateRange()">
+                        Date range
+                    </label>
+                    <div id="dateRangeInputs" style="display:none; display:none; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <input type="date" class="filter-select" id="reportFromDate" style="font-size:0.82rem; padding:8px 10px;">
+                        <span style="font-size:0.8rem;color:var(--text-muted);font-weight:600;">to</span>
+                        <input type="date" class="filter-select" id="reportToDate" style="font-size:0.82rem; padding:8px 10px;">
+                    </div>
                     <button class="btn btn-primary" onclick="generatePassbookPDF()">
-                        <span>&#128196;</span> Generate Passbook PDF
+                        <span>&#128196;</span> Generate PDF
                     </button>
                     <button class="btn btn-secondary" onclick="exportData()">
                         <span>&#128228;</span> Export JSON
@@ -917,9 +984,6 @@
                         <span>&#128229;</span> Import JSON
                     </button>
                     <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
-                    <span style="color: var(--text-muted); font-size: 0.8rem; margin-left: auto; font-weight: 500;">
-                        Generate professional passbook-style PDF reports
-                    </span>
                 </div>
             </div>
         </div>
@@ -1121,6 +1185,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         // SVG Icons
         const ICONS = {
@@ -1133,6 +1198,7 @@
         var debts = JSON.parse(localStorage.getItem('hisaabkitaab_debts')) || [];
         var creditors = JSON.parse(localStorage.getItem('hisaabkitaab_creditors')) || [];
         var userPin = localStorage.getItem('hisaabkitaab_pin') || null;
+        var appSettings = JSON.parse(localStorage.getItem('hisaabkitaab_settings')) || { upiId: '', upiName: '' };
         var currentPin = '';
         var setPinStep = 1;
         var tempPin = '';
@@ -1147,6 +1213,10 @@
             document.getElementById('debtDate').valueAsDate = new Date();
             document.getElementById('paymentDate').valueAsDate = new Date();
             populateExportFilter();
+            // Load saved settings into fields
+            document.getElementById('settingsUpiId').value = appSettings.upiId || '';
+            document.getElementById('settingsUpiName').value = appSettings.upiName || '';
+            if (appSettings.upiId) previewUpiQR();
         });
 
         function switchTab(e, tab) {
@@ -1912,34 +1982,120 @@
         }
 
         // PDF Passbook Generation
+        // ── Settings ──────────────────────────────────────────────
+        function saveSettings() {
+            appSettings.upiId   = document.getElementById('settingsUpiId').value.trim();
+            appSettings.upiName = document.getElementById('settingsUpiName').value.trim();
+            localStorage.setItem('hisaabkitaab_settings', JSON.stringify(appSettings));
+            showToast('Settings saved successfully');
+        }
+
+        function previewUpiQR() {
+            var upiId   = document.getElementById('settingsUpiId').value.trim();
+            var upiName = document.getElementById('settingsUpiName').value.trim();
+            var preview = document.getElementById('upiPreview');
+            if (!upiId) { preview.style.display = 'none'; return; }
+            preview.style.display = 'block';
+            var canvas = document.getElementById('upiQrPreviewCanvas');
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+            var upiLink = 'upi://pay?pa=' + encodeURIComponent(upiId) +
+                          '&pn=' + encodeURIComponent(upiName || upiId) +
+                          '&am=100&cu=INR&tn=HisaabKitaab';
+            QRCode.toCanvas(canvas, upiLink, { width: 120, margin: 1 }, function(err) {});
+        }
+
+        // Generate QR as data URL for PDF embedding
+        function generateUpiQRDataURL(amount, note, callback) {
+            var upiId   = appSettings.upiId;
+            var upiName = appSettings.upiName || upiId;
+            if (!upiId) { callback(null); return; }
+            var upiLink = 'upi://pay?pa=' + encodeURIComponent(upiId) +
+                          '&pn=' + encodeURIComponent(upiName) +
+                          '&am=' + (amount > 0 ? amount.toFixed(2) : '') +
+                          '&cu=INR&tn=' + encodeURIComponent(note || 'HisaabKitaab');
+            var canvas = document.createElement('canvas');
+            QRCode.toCanvas(canvas, upiLink, { width: 120, margin: 1 }, function(err) {
+                if (err) { callback(null); return; }
+                callback(canvas.toDataURL('image/png'));
+            });
+        }
+
+        // ── Date Range Toggle ─────────────────────────────────────
+        function toggleDateRange() {
+            var checked = document.getElementById('dateRangeToggle').checked;
+            var box = document.getElementById('dateRangeInputs');
+            box.style.display = checked ? 'flex' : 'none';
+            if (checked && !document.getElementById('reportToDate').value) {
+                var today = new Date();
+                var firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                document.getElementById('reportFromDate').valueAsDate = firstDay;
+                document.getElementById('reportToDate').valueAsDate = today;
+            }
+        }
+
+        function getDateRangeFilter() {
+            var enabled = document.getElementById('dateRangeToggle').checked;
+            if (!enabled) return null;
+            var from = document.getElementById('reportFromDate').value;
+            var to   = document.getElementById('reportToDate').value;
+            return { from: from || null, to: to || null };
+        }
+
+        function debtInDateRange(debt, range) {
+            if (!range) return true;
+            var d = new Date(debt.date);
+            if (range.from && d < new Date(range.from)) return false;
+            if (range.to   && d > new Date(range.to + 'T23:59:59')) return false;
+            return true;
+        }
+
+        // ── PDF Generation ────────────────────────────────────────
         function generatePassbookPDF() {
-            var filterId = document.getElementById('exportFilter').value;
-            var filterName = filterId === 'all' ? 'All Contacts' : getCreditorName(filterId);
-            var hidePaid = document.getElementById('hidePaidFilter').checked;
+            var filterId    = document.getElementById('exportFilter').value;
+            var filterName  = filterId === 'all' ? 'All Contacts' : getCreditorName(filterId);
+            var hidePaid    = document.getElementById('hidePaidFilter').checked;
             var summaryMode = document.getElementById('summaryModeFilter').checked;
+            var dateRange   = getDateRangeFilter();
 
             function paidAmount(debt) {
                 return debt.payments.reduce(function(s, p) { return s + p.amount; }, 0);
             }
 
-            // Filter debts by contact and paid status
             var filteredDebts = debts.filter(function(debt) {
                 if (filterId !== 'all' && debt.creditorId !== filterId) return false;
                 if (hidePaid && paidAmount(debt) >= debt.amount) return false;
+                if (!debtInDateRange(debt, dateRange)) return false;
                 return true;
             });
 
             if (filteredDebts.length === 0) {
-                showToast('No transactions to generate report', 'error');
+                showToast('No transactions match the selected filters', 'error');
                 return;
             }
 
-            if (summaryMode) {
-                generateSummaryPDF(filteredDebts, filterName, hidePaid);
-                return;
-            }
+            // Calculate total outstanding for QR amount
+            var totalOutstanding = filteredDebts.reduce(function(s, d) {
+                return s + Math.max(0, d.amount - paidAmount(d));
+            }, 0);
 
-            // --- FULL LEDGER MODE ---
+            var rangeLabel = dateRange
+                ? (dateRange.from ? formatDate(dateRange.from) : 'Start') + ' to ' + (dateRange.to ? formatDate(dateRange.to) : 'Today')
+                : 'All Time';
+
+            // Generate QR then build PDF
+            generateUpiQRDataURL(totalOutstanding, 'HisaabKitaab-' + filterName, function(qrDataUrl) {
+                if (summaryMode) {
+                    buildSummaryPDF(filteredDebts, filterName, hidePaid, rangeLabel, qrDataUrl, totalOutstanding);
+                } else {
+                    buildFullPDF(filteredDebts, filterName, hidePaid, rangeLabel, qrDataUrl, totalOutstanding);
+                }
+            });
+        }
+        // ── Full Ledger PDF ───────────────────────────────────────
+        function buildFullPDF(filteredDebts, filterName, hidePaid, rangeLabel, qrDataUrl, totalOutstanding) {
+            function paidAmount(debt) {
+                return debt.payments.reduce(function(s, p) { return s + p.amount; }, 0);
+            }
             var entries = [];
             filteredDebts.forEach(function(debt) {
                 var creditor = creditors.find(function(c) { return c.id === debt.creditorId; });
@@ -1961,14 +2117,8 @@
                     });
                 });
             });
-
             entries.sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
-
-            if (entries.length === 0) {
-                showToast('No transactions to generate report', 'error');
-                return;
-            }
-
+            if (entries.length === 0) { showToast('No transactions to generate report', 'error'); return; }
             var runningBalance = 0;
             entries.forEach(function(entry) {
                 runningBalance += entry.credit - entry.debit;
@@ -1990,185 +2140,118 @@
             doc.text('HISAAB KITAAB', pageWidth / 2, 18, { align: 'center' });
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            var modeLabel = hidePaid ? 'Outstanding Transactions Only' : 'Account Statement & Passbook';
-            doc.text(modeLabel, pageWidth / 2, 26, { align: 'center' });
+            doc.text(hidePaid ? 'Outstanding Transactions Only' : 'Account Statement & Passbook', pageWidth / 2, 26, { align: 'center' });
             doc.text('Generated: ' + new Date().toLocaleDateString('en-IN'), pageWidth / 2, 32, { align: 'center' });
 
-            // Account Info Box
+            // Info Box
             var y = 48;
             doc.setDrawColor(226, 232, 240);
             doc.setFillColor(248, 250, 252);
             doc.roundedRect(margin, y, contentWidth, 32, 4, 4, 'FD');
-            doc.setDrawColor(124, 58, 237);
-            doc.setLineWidth(0.8);
+            doc.setDrawColor(124, 58, 237); doc.setLineWidth(0.8);
             doc.line(margin, y, margin + contentWidth, y);
-
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Account Holder:', margin + 5, y + 8);
-            doc.setFont('helvetica', 'normal');
-            doc.text(filterName, margin + 5, y + 16);
-
-            doc.setFont('helvetica', 'bold');
-            doc.text('Period:', margin + contentWidth / 2, y + 8);
-            doc.setFont('helvetica', 'normal');
-            var firstDate = entries[0].date;
-            var lastDate = entries[entries.length - 1].date;
-            doc.text(formatDate(firstDate) + ' to ' + formatDate(lastDate), margin + contentWidth / 2, y + 16);
-
-            doc.setFont('helvetica', 'bold');
-            doc.text('Closing Balance:', margin + contentWidth / 2, y + 26);
-            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(15, 23, 42); doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold'); doc.text('Contact:', margin + 5, y + 8);
+            doc.setFont('helvetica', 'normal'); doc.text(filterName, margin + 28, y + 8);
+            doc.setFont('helvetica', 'bold'); doc.text('Period:', margin + 5, y + 18);
+            doc.setFont('helvetica', 'normal'); doc.text(rangeLabel, margin + 22, y + 18);
+            doc.setFont('helvetica', 'bold'); doc.text('Closing Balance:', margin + contentWidth / 2, y + 26);
             var closingBal = entries[entries.length - 1].balance;
             doc.setTextColor(closingBal >= 0 ? 16 : 220, closingBal >= 0 ? 185 : 50, closingBal >= 0 ? 129 : 50);
-            doc.text(formatCurrencyPDF(closingBal), margin + contentWidth / 2 + 38, y + 26);
+            doc.setFont('helvetica', 'normal'); doc.text(formatCurrencyPDF(closingBal), margin + contentWidth / 2 + 38, y + 26);
 
-            // Passbook Table
+            // Table
             y = 88;
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(13);
-            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 23, 42); doc.setFontSize(13); doc.setFont('helvetica', 'bold');
             doc.text('TRANSACTION HISTORY' + (hidePaid ? ' (Outstanding Only)' : ''), margin, y);
             y += 10;
-
             var colX = [margin, margin + 24, margin + 88, margin + 118, margin + 148];
 
             function drawTableHeader(yPos, rowH) {
                 doc.setFillColor(124, 58, 237);
                 doc.rect(margin, yPos, contentWidth, rowH, 'F');
-                doc.setDrawColor(124, 58, 237);
-                doc.setLineWidth(0.5);
+                doc.setDrawColor(124, 58, 237); doc.setLineWidth(0.5);
                 doc.line(margin, yPos, margin + contentWidth, yPos);
                 doc.line(margin, yPos + rowH, margin + contentWidth, yPos + rowH);
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(255, 255, 255);
-                doc.text('Date', colX[0] + 3, yPos + rowH - 3.5);
-                doc.text('Particulars', colX[1] + 3, yPos + rowH - 3.5);
-                doc.text('Debit (Dr)', colX[2] + 3, yPos + rowH - 3.5);
-                doc.text('Credit (Cr)', colX[3] + 3, yPos + rowH - 3.5);
-                doc.text('Balance', colX[4] + 3, yPos + rowH - 3.5);
+                doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(255, 255, 255);
+                doc.text('Date', colX[0]+3, yPos+rowH-3.5);
+                doc.text('Particulars', colX[1]+3, yPos+rowH-3.5);
+                doc.text('Debit (Dr)', colX[2]+3, yPos+rowH-3.5);
+                doc.text('Credit (Cr)', colX[3]+3, yPos+rowH-3.5);
+                doc.text('Balance', colX[4]+3, yPos+rowH-3.5);
             }
-
-            drawTableHeader(y, 10);
-            y += 10;
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8);
-            doc.setLineWidth(0.15);
+            drawTableHeader(y, 10); y += 10;
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setLineWidth(0.15);
 
             entries.forEach(function(entry, index) {
                 if (y > 270) {
-                    doc.addPage();
-                    y = 20;
-                    doc.setFillColor(124, 58, 237);
-                    doc.rect(0, 0, pageWidth, 14, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(10);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text('HISAAB KITAAB - Account Statement (Continued)', pageWidth / 2, 9, { align: 'center' });
-                    y = 22;
-                    drawTableHeader(y, 8);
-                    y += 8;
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(8);
+                    doc.addPage(); y = 20;
+                    doc.setFillColor(124, 58, 237); doc.rect(0,0,pageWidth,14,'F');
+                    doc.setTextColor(255,255,255); doc.setFontSize(10); doc.setFont('helvetica','bold');
+                    doc.text('HISAAB KITAAB - Account Statement (Continued)', pageWidth/2, 9, {align:'center'});
+                    y = 22; drawTableHeader(y, 8); y += 8;
+                    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
                 }
-
-                if (index % 2 === 0) {
-                    doc.setFillColor(248, 250, 252);
-                    doc.rect(margin, y, contentWidth, 7.5, 'F');
-                }
-
-                doc.setTextColor(15, 23, 42);
-                var dateStr = new Date(entry.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                doc.text(dateStr, colX[0] + 3, y + 5);
-                var desc = entry.description;
-                if (desc.length > 36) desc = desc.substring(0, 33) + '...';
-                doc.text(desc, colX[1] + 3, y + 5);
-
-                if (entry.debit > 0) {
-                    doc.setTextColor(220, 50, 50);
-                    doc.text(formatCurrencyPDF(entry.debit).replace('Rs. ', ''), colX[2] + 3, y + 5);
-                }
-                doc.setTextColor(15, 23, 42);
-                if (entry.credit > 0) {
-                    doc.setTextColor(50, 150, 50);
-                    doc.text(formatCurrencyPDF(entry.credit).replace('Rs. ', ''), colX[3] + 3, y + 5);
-                }
-                doc.setTextColor(15, 23, 42);
-                var balColor = entry.balance >= 0 ? [50, 150, 50] : [220, 50, 50];
-                doc.setTextColor(balColor[0], balColor[1], balColor[2]);
-                doc.text(formatCurrencyPDF(entry.balance).replace('Rs. ', ''), colX[4] + 3, y + 5);
-                doc.setDrawColor(226, 232, 240);
-                doc.setLineWidth(0.1);
-                doc.line(margin, y + 7.5, margin + contentWidth, y + 7.5);
-                y += 7.5;
+                if (index % 2 === 0) { doc.setFillColor(248,250,252); doc.rect(margin,y,contentWidth,7.5,'F'); }
+                doc.setTextColor(15,23,42);
+                var dateStr = new Date(entry.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+                doc.text(dateStr, colX[0]+3, y+5);
+                var desc = entry.description; if (desc.length > 36) desc = desc.substring(0,33)+'...';
+                doc.text(desc, colX[1]+3, y+5);
+                if (entry.debit > 0) { doc.setTextColor(220,50,50); doc.text(formatCurrencyPDF(entry.debit).replace('Rs. ',''), colX[2]+3, y+5); }
+                doc.setTextColor(15,23,42);
+                if (entry.credit > 0) { doc.setTextColor(50,150,50); doc.text(formatCurrencyPDF(entry.credit).replace('Rs. ',''), colX[3]+3, y+5); }
+                var balC = entry.balance >= 0 ? [50,150,50] : [220,50,50];
+                doc.setTextColor(balC[0],balC[1],balC[2]);
+                doc.text(formatCurrencyPDF(entry.balance).replace('Rs. ',''), colX[4]+3, y+5);
+                doc.setDrawColor(226,232,240); doc.setLineWidth(0.1);
+                doc.line(margin, y+7.5, margin+contentWidth, y+7.5); y += 7.5;
             });
 
-            y += 6;
-            if (y > 240) { doc.addPage(); y = 30; }
+            y += 6; if (y > 240) { doc.addPage(); y = 30; }
 
-            // Summary Box
-            doc.setDrawColor(226, 232, 240);
-            doc.setFillColor(248, 250, 252);
-            doc.roundedRect(margin, y, contentWidth, 38, 4, 4, 'FD');
-            doc.setDrawColor(124, 58, 237);
-            doc.setLineWidth(0.8);
-            doc.line(margin, y, margin + contentWidth, y);
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('SUMMARY', margin + 5, y + 8);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
+            // Summary box
+            var summaryH = qrDataUrl ? 52 : 38;
+            doc.setDrawColor(226,232,240); doc.setFillColor(248,250,252);
+            doc.roundedRect(margin, y, contentWidth, summaryH, 4, 4, 'FD');
+            doc.setDrawColor(124,58,237); doc.setLineWidth(0.8);
+            doc.line(margin, y, margin+contentWidth, y);
+            doc.setTextColor(15,23,42); doc.setFontSize(11); doc.setFont('helvetica','bold');
+            doc.text('SUMMARY', margin+5, y+8);
+            doc.setFont('helvetica','normal'); doc.setFontSize(9);
+            var totalDebit = entries.reduce(function(s,e){return s+e.debit;},0);
+            var totalCredit = entries.reduce(function(s,e){return s+e.credit;},0);
+            var finalBalance = entries[entries.length-1].balance;
+            doc.text('Total Debit:', margin+5, y+17); doc.setTextColor(220,50,50); doc.text(formatCurrencyPDF(totalDebit), margin+38, y+17);
+            doc.setTextColor(15,23,42); doc.text('Total Credit:', margin+5, y+24); doc.setTextColor(50,150,50); doc.text(formatCurrencyPDF(totalCredit), margin+38, y+24);
+            doc.setTextColor(15,23,42); doc.text('Net Balance:', margin+contentWidth/2, y+17);
+            doc.setFont('helvetica','bold');
+            var netC = finalBalance >= 0 ? [50,150,50] : [220,50,50]; doc.setTextColor(netC[0],netC[1],netC[2]);
+            doc.text(formatCurrencyPDF(finalBalance), margin+contentWidth/2+35, y+17);
+            doc.setTextColor(100,100,100); doc.setFont('helvetica','italic'); doc.setFontSize(8);
+            doc.text('Note: Positive balance means others owe you. Negative balance means you owe others.', margin+5, y+32);
 
-            var totalDebit = entries.reduce(function(s, e) { return s + e.debit; }, 0);
-            var totalCredit = entries.reduce(function(s, e) { return s + e.credit; }, 0);
-            var finalBalance = entries[entries.length - 1].balance;
-
-            doc.text('Total Debit:', margin + 5, y + 17);
-            doc.setTextColor(220, 50, 50);
-            doc.text(formatCurrencyPDF(totalDebit), margin + 38, y + 17);
-            doc.setTextColor(15, 23, 42);
-            doc.text('Total Credit:', margin + 5, y + 24);
-            doc.setTextColor(50, 150, 50);
-            doc.text(formatCurrencyPDF(totalCredit), margin + 38, y + 24);
-            doc.setTextColor(15, 23, 42);
-            doc.text('Net Balance:', margin + contentWidth / 2, y + 17);
-            doc.setFont('helvetica', 'bold');
-            var netColor = finalBalance >= 0 ? [50, 150, 50] : [220, 50, 50];
-            doc.setTextColor(netColor[0], netColor[1], netColor[2]);
-            doc.text(formatCurrencyPDF(finalBalance), margin + contentWidth / 2 + 35, y + 17);
-            doc.setTextColor(100, 100, 100);
-            doc.setFont('helvetica', 'italic');
-            doc.setFontSize(8);
-            doc.text('Note: Positive balance means others owe you. Negative balance means you owe others.', margin + 5, y + 34);
-
-            // Footer on all pages
-            var pageCount = doc.internal.getNumberOfPages();
-            for (var i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setDrawColor(226, 232, 240);
-                doc.setLineWidth(0.3);
-                doc.line(margin, 285, margin + contentWidth, 285);
-                doc.setTextColor(148, 163, 184);
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'normal');
-                doc.text('Hisaab Kitaab Account Statement | Page ' + i + ' of ' + pageCount, pageWidth / 2, 290, { align: 'center' });
-                doc.text('This is a computer generated statement and does not require signature.', pageWidth / 2, 294, { align: 'center' });
+            // QR Code
+            if (qrDataUrl && totalOutstanding > 0) {
+                var qrY = y + 38;
+                doc.addImage(qrDataUrl, 'PNG', margin + contentWidth - 36, qrY - 35, 32, 32);
+                doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(124, 58, 237);
+                doc.text('Scan to Pay', margin + contentWidth - 36 + 16, qrY, { align: 'center' });
+                doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 100, 100);
+                doc.text('(Amt pre-filled, editable)', margin + contentWidth - 36 + 16, qrY + 4, { align: 'center' });
             }
 
+            addFooter(doc, pageWidth, margin, contentWidth);
             var fileName = 'HisaabKitaab-Passbook-' + filterName.split(' ').join('-') + '-' + new Date().toISOString().split('T')[0] + '.pdf';
             doc.save(fileName);
             showToast('Passbook PDF generated successfully');
         }
 
-        // Summary-Only PDF: one row per debt, compact
-        function generateSummaryPDF(filteredDebts, filterName, hidePaid) {
+        // ── Summary PDF ───────────────────────────────────────────
+        function buildSummaryPDF(filteredDebts, filterName, hidePaid, rangeLabel, qrDataUrl, totalOutstanding) {
             function paidAmount(debt) {
                 return debt.payments.reduce(function(s, p) { return s + p.amount; }, 0);
             }
-
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF('p', 'mm', 'a4');
             var pageWidth = doc.internal.pageSize.getWidth();
@@ -2176,199 +2259,138 @@
             var contentWidth = pageWidth - (margin * 2);
 
             // Header
-            doc.setFillColor(124, 58, 237);
-            doc.rect(0, 0, pageWidth, 40, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(24);
-            doc.setFont('helvetica', 'bold');
-            doc.text('HISAAB KITAAB', pageWidth / 2, 18, { align: 'center' });
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            var subtitle = 'Summary Report' + (hidePaid ? ' - Outstanding Only' : '');
-            doc.text(subtitle, pageWidth / 2, 26, { align: 'center' });
-            doc.text('Generated: ' + new Date().toLocaleDateString('en-IN'), pageWidth / 2, 32, { align: 'center' });
+            doc.setFillColor(124, 58, 237); doc.rect(0, 0, pageWidth, 40, 'F');
+            doc.setTextColor(255,255,255); doc.setFontSize(24); doc.setFont('helvetica','bold');
+            doc.text('HISAAB KITAAB', pageWidth/2, 18, {align:'center'});
+            doc.setFontSize(10); doc.setFont('helvetica','normal');
+            doc.text('Summary Report' + (hidePaid ? ' - Outstanding Only' : ''), pageWidth/2, 26, {align:'center'});
+            doc.text('Generated: ' + new Date().toLocaleDateString('en-IN'), pageWidth/2, 32, {align:'center'});
 
-            // Account info
+            // Info row
             var y = 48;
-            doc.setDrawColor(226, 232, 240);
-            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(226,232,240); doc.setFillColor(248,250,252);
             doc.roundedRect(margin, y, contentWidth, 20, 4, 4, 'FD');
-            doc.setDrawColor(124, 58, 237);
-            doc.setLineWidth(0.8);
-            doc.line(margin, y, margin + contentWidth, y);
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Contact:', margin + 5, y + 8);
-            doc.setFont('helvetica', 'normal');
-            doc.text(filterName, margin + 28, y + 8);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Total Records:', margin + contentWidth / 2, y + 8);
-            doc.setFont('helvetica', 'normal');
-            doc.text(String(filteredDebts.length), margin + contentWidth / 2 + 32, y + 8);
+            doc.setDrawColor(124,58,237); doc.setLineWidth(0.8); doc.line(margin, y, margin+contentWidth, y);
+            doc.setTextColor(15,23,42); doc.setFontSize(10);
+            doc.setFont('helvetica','bold'); doc.text('Contact:', margin+5, y+8);
+            doc.setFont('helvetica','normal'); doc.text(filterName, margin+28, y+8);
+            doc.setFont('helvetica','bold'); doc.text('Period:', margin+contentWidth/2, y+8);
+            doc.setFont('helvetica','normal'); doc.text(rangeLabel, margin+contentWidth/2+18, y+8);
+            doc.setFont('helvetica','bold'); doc.text('Records:', margin+5, y+16);
+            doc.setFont('helvetica','normal'); doc.text(String(filteredDebts.length), margin+26, y+16);
             y += 28;
 
-            // Totals
+            // Totals highlight box
             var grandTotal = 0, grandPaid = 0, grandOutstanding = 0;
             filteredDebts.forEach(function(d) {
-                var paid = paidAmount(d);
-                var outstanding = Math.max(0, d.amount - paid);
-                if (d.type === 'owe') { grandTotal -= d.amount; grandOutstanding -= outstanding; }
-                else { grandTotal += d.amount; grandOutstanding += outstanding; }
+                var paid = paidAmount(d); var out = Math.max(0, d.amount - paid);
+                if (d.type === 'owe') { grandTotal -= d.amount; grandOutstanding -= out; }
+                else { grandTotal += d.amount; grandOutstanding += out; }
                 grandPaid += paid;
             });
-
-            // Net outstanding highlight box
-            doc.setFillColor(grandOutstanding >= 0 ? 240 : 254, grandOutstanding >= 0 ? 253 : 242, grandOutstanding >= 0 ? 244 : 242);
-            doc.setDrawColor(grandOutstanding >= 0 ? 16 : 239, grandOutstanding >= 0 ? 185 : 68, grandOutstanding >= 0 ? 129 : 68);
-            doc.setLineWidth(0.5);
-            doc.roundedRect(margin, y, contentWidth, 22, 4, 4, 'FD');
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(15, 23, 42);
-
+            var boxColor = grandOutstanding >= 0 ? [240,253,244] : [254,242,242];
+            var borderColor = grandOutstanding >= 0 ? [16,185,129] : [239,68,68];
+            doc.setFillColor(boxColor[0],boxColor[1],boxColor[2]);
+            doc.setDrawColor(borderColor[0],borderColor[1],borderColor[2]);
+            doc.setLineWidth(0.5); doc.roundedRect(margin, y, contentWidth, 22, 4, 4, 'FD');
             var thirdW = contentWidth / 3;
-            doc.text('Net Transacted', margin + thirdW * 0 + 5, y + 7);
-            doc.text('Total Paid', margin + thirdW * 1 + 5, y + 7);
-            doc.text('Net Outstanding', margin + thirdW * 2 + 5, y + 7);
-
+            doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(15,23,42);
+            doc.text('Net Transacted', margin+thirdW*0+5, y+7);
+            doc.text('Total Paid', margin+thirdW*1+5, y+7);
+            doc.text('Net Outstanding', margin+thirdW*2+5, y+7);
             doc.setFontSize(10);
-            doc.setTextColor(15, 23, 42);
-            doc.text(formatCurrencyPDF(Math.abs(grandTotal)).replace('Rs. ', 'Rs.'), margin + thirdW * 0 + 5, y + 17);
-            doc.setTextColor(50, 150, 50);
-            doc.text(formatCurrencyPDF(grandPaid).replace('Rs. ', 'Rs.'), margin + thirdW * 1 + 5, y + 17);
-            var outColor = grandOutstanding >= 0 ? [16, 185, 129] : [220, 50, 50];
-            doc.setTextColor(outColor[0], outColor[1], outColor[2]);
-            doc.text(formatCurrencyPDF(Math.abs(grandOutstanding)).replace('Rs. ', 'Rs.'), margin + thirdW * 2 + 5, y + 17);
-
+            doc.setTextColor(15,23,42); doc.text(formatCurrencyPDF(Math.abs(grandTotal)).replace('Rs. ','Rs.'), margin+thirdW*0+5, y+17);
+            doc.setTextColor(50,150,50); doc.text(formatCurrencyPDF(grandPaid).replace('Rs. ','Rs.'), margin+thirdW*1+5, y+17);
+            var outC = grandOutstanding >= 0 ? [16,185,129] : [220,50,50]; doc.setTextColor(outC[0],outC[1],outC[2]);
+            doc.text(formatCurrencyPDF(Math.abs(grandOutstanding)).replace('Rs. ','Rs.'), margin+thirdW*2+5, y+17);
             y += 28;
 
-            // Table title
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('TRANSACTION SUMMARY', margin, y);
-            y += 8;
-
+            // Table
+            doc.setTextColor(15,23,42); doc.setFontSize(12); doc.setFont('helvetica','bold');
+            doc.text('TRANSACTION SUMMARY', margin, y); y += 8;
             var sColX = [margin, margin+20, margin+52, margin+108, margin+123, margin+138, margin+153];
-            var sColLbl = ['Date', 'Contact', 'Description', 'Type', 'Original', 'Paid', 'Outstanding'];
+            var sColLbl = ['Date','Contact','Description','Type','Original','Paid','Outstanding'];
 
             function drawSummaryHeader(yPos) {
-                doc.setFillColor(124, 58, 237);
-                doc.rect(margin, yPos, contentWidth, 9, 'F');
-                doc.setFontSize(7);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(255, 255, 255);
-                sColLbl.forEach(function(lbl, i) { doc.text(lbl, sColX[i] + 2, yPos + 6); });
+                doc.setFillColor(124,58,237); doc.rect(margin, yPos, contentWidth, 9, 'F');
+                doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+                sColLbl.forEach(function(lbl,i){ doc.text(lbl, sColX[i]+2, yPos+6); });
             }
-
-            drawSummaryHeader(y);
-            y += 9;
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(7.5);
-            doc.setLineWidth(0.1);
-
-            var sortedDebts = filteredDebts.slice().sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
-
-            sortedDebts.forEach(function(debt, index) {
+            drawSummaryHeader(y); y += 9;
+            doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setLineWidth(0.1);
+            filteredDebts.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(debt,index) {
                 if (y > 272) {
-                    doc.addPage();
-                    y = 20;
-                    doc.setFillColor(124, 58, 237);
-                    doc.rect(0, 0, pageWidth, 12, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(9);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text('HISAAB KITAAB - Summary Report (Continued)', pageWidth / 2, 8, { align: 'center' });
-                    y = 16;
-                    drawSummaryHeader(y);
-                    y += 9;
-                    doc.setFont('helvetica', 'normal');
-                    doc.setFontSize(7.5);
+                    doc.addPage(); y = 20;
+                    doc.setFillColor(124,58,237); doc.rect(0,0,pageWidth,12,'F');
+                    doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','bold');
+                    doc.text('HISAAB KITAAB - Summary Report (Continued)', pageWidth/2, 8, {align:'center'});
+                    y = 16; drawSummaryHeader(y); y += 9;
+                    doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
                 }
-
-                var paid = paidAmount(debt);
-                var outstanding = Math.max(0, debt.amount - paid);
-                var creditor = creditors.find(function(c) { return c.id === debt.creditorId; });
+                var paid = paidAmount(debt); var outstanding = Math.max(0, debt.amount - paid);
+                var creditor = creditors.find(function(c){return c.id===debt.creditorId;});
                 var creditorName = creditor ? creditor.name : 'Unknown';
-                var isSettled = outstanding <= 0;
-                var rowH = 8;
-
-                if (isSettled) { doc.setFillColor(240, 253, 244); }
-                else if (index % 2 === 0) { doc.setFillColor(248, 250, 252); }
-                else { doc.setFillColor(255, 255, 255); }
+                var isSettled = outstanding <= 0; var rowH = 8;
+                if (isSettled) doc.setFillColor(240,253,244);
+                else if (index%2===0) doc.setFillColor(248,250,252);
+                else doc.setFillColor(255,255,255);
                 doc.rect(margin, y, contentWidth, rowH, 'F');
-
-                if (isSettled) {
-                    doc.setFillColor(16, 185, 129);
-                    doc.rect(margin, y, 2, rowH, 'F');
-                }
-
-                var textColor = isSettled ? [100, 130, 110] : [15, 23, 42];
-                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-
-                var dStr = new Date(debt.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' });
-                doc.text(dStr, sColX[0] + 2, y + 5.5);
-
-                var cName = creditorName.length > 14 ? creditorName.substring(0, 12) + '..' : creditorName;
-                doc.text(cName, sColX[1] + 2, y + 5.5);
-
-                var desc = (debt.notes || 'Transaction');
-                if (desc.length > 28) desc = desc.substring(0, 26) + '..';
-                doc.text(desc, sColX[2] + 2, y + 5.5);
-
-                doc.setTextColor(debt.type === 'owe' ? 220 : 50, debt.type === 'owe' ? 50 : 150, 50);
-                doc.text(debt.type === 'owe' ? 'I Owe' : 'Owed Me', sColX[3] + 2, y + 5.5);
-
-                doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-                doc.text(formatCurrencyPDF(debt.amount).replace('Rs. ', ''), sColX[4] + 2, y + 5.5);
-
-                doc.setTextColor(50, 150, 50);
-                doc.text(formatCurrencyPDF(paid).replace('Rs. ', ''), sColX[5] + 2, y + 5.5);
-
-                if (isSettled) {
-                    doc.setTextColor(16, 185, 129);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text('SETTLED', sColX[6] + 2, y + 5.5);
-                    doc.setFont('helvetica', 'normal');
-                } else {
-                    doc.setTextColor(220, 50, 50);
-                    doc.text(formatCurrencyPDF(outstanding).replace('Rs. ', ''), sColX[6] + 2, y + 5.5);
-                }
-
-                doc.setDrawColor(226, 232, 240);
-                doc.setLineWidth(0.1);
-                doc.line(margin, y + rowH, margin + contentWidth, y + rowH);
-                y += rowH;
+                if (isSettled) { doc.setFillColor(16,185,129); doc.rect(margin, y, 2, rowH, 'F'); }
+                var tc = isSettled ? [100,130,110] : [15,23,42]; doc.setTextColor(tc[0],tc[1],tc[2]);
+                doc.text(new Date(debt.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'2-digit'}), sColX[0]+2, y+5.5);
+                var cN = creditorName.length>14 ? creditorName.substring(0,12)+'..' : creditorName; doc.text(cN, sColX[1]+2, y+5.5);
+                var dsc = (debt.notes||'Transaction'); if(dsc.length>28) dsc=dsc.substring(0,26)+'..'; doc.text(dsc, sColX[2]+2, y+5.5);
+                doc.setTextColor(debt.type==='owe'?220:50, debt.type==='owe'?50:150, 50);
+                doc.text(debt.type==='owe'?'I Owe':'Owed Me', sColX[3]+2, y+5.5);
+                doc.setTextColor(tc[0],tc[1],tc[2]); doc.text(formatCurrencyPDF(debt.amount).replace('Rs. ',''), sColX[4]+2, y+5.5);
+                doc.setTextColor(50,150,50); doc.text(formatCurrencyPDF(paid).replace('Rs. ',''), sColX[5]+2, y+5.5);
+                if (isSettled) { doc.setTextColor(16,185,129); doc.setFont('helvetica','bold'); doc.text('SETTLED', sColX[6]+2, y+5.5); doc.setFont('helvetica','normal'); }
+                else { doc.setTextColor(220,50,50); doc.text(formatCurrencyPDF(outstanding).replace('Rs. ',''), sColX[6]+2, y+5.5); }
+                doc.setDrawColor(226,232,240); doc.setLineWidth(0.1); doc.line(margin, y+rowH, margin+contentWidth, y+rowH); y += rowH;
             });
 
-            y += 8;
-            if (y > 250) { doc.addPage(); y = 30; }
-
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'italic');
-            doc.setTextColor(100, 100, 100);
-            doc.text('Green stripe = Fully settled  |  Red = Amount still due  |  "I Owe" = You owe them  |  "Owed Me" = They owe you', margin + 5, y);
+            y += 8; if (y > 250) { doc.addPage(); y = 30; }
+            doc.setFontSize(8); doc.setFont('helvetica','italic'); doc.setTextColor(100,100,100);
+            doc.text('Green stripe = Fully settled  |  Red = Amount still due  |  "I Owe" = You owe them  |  "Owed Me" = They owe you', margin+5, y);
             y += 6;
-            doc.text('Note: Positive net outstanding means money is owed to you. Negative means you owe others.', margin + 5, y);
+            doc.text('Note: Positive net outstanding means money is owed to you. Negative means you owe others.', margin+5, y);
 
-            // Footer
-            var pageCount = doc.internal.getNumberOfPages();
-            for (var i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setDrawColor(226, 232, 240);
-                doc.setLineWidth(0.3);
-                doc.line(margin, 285, margin + contentWidth, 285);
-                doc.setTextColor(148, 163, 184);
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'normal');
-                doc.text('Hisaab Kitaab Summary Report | Page ' + i + ' of ' + pageCount, pageWidth / 2, 290, { align: 'center' });
-                doc.text('This is a computer generated statement and does not require signature.', pageWidth / 2, 294, { align: 'center' });
+            // QR Code
+            if (qrDataUrl && totalOutstanding > 0) {
+                y += 10; if (y > 250) { doc.addPage(); y = 30; }
+                doc.setDrawColor(226,232,240); doc.setFillColor(248,250,252);
+                doc.roundedRect(margin, y, contentWidth, 46, 4, 4, 'FD');
+                doc.setDrawColor(124,58,237); doc.setLineWidth(0.8); doc.line(margin, y, margin+contentWidth, y);
+                doc.setTextColor(15,23,42); doc.setFontSize(10); doc.setFont('helvetica','bold');
+                doc.text('PAY VIA UPI', margin+5, y+9);
+                doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(100,100,100);
+                doc.text('Scan the QR code with any UPI app (GPay, PhonePe, Paytm) to pay.', margin+5, y+17);
+                doc.text('Outstanding amount is pre-filled — you can change it before paying.', margin+5, y+24);
+                doc.setTextColor(124,58,237); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+                doc.text('Outstanding: ' + formatCurrencyPDF(totalOutstanding), margin+5, y+33);
+                doc.setTextColor(100,100,100); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+                doc.text('UPI ID: ' + appSettings.upiId, margin+5, y+40);
+                doc.addImage(qrDataUrl, 'PNG', margin+contentWidth-38, y+4, 34, 34);
+                doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(124,58,237);
+                doc.text('Scan to Pay', margin+contentWidth-38+17, y+42, {align:'center'});
             }
 
+            addFooter(doc, pageWidth, margin, contentWidth);
             var fileName = 'HisaabKitaab-Summary-' + filterName.split(' ').join('-') + '-' + new Date().toISOString().split('T')[0] + '.pdf';
             doc.save(fileName);
             showToast('Summary PDF generated successfully');
+        }
+
+        function addFooter(doc, pageWidth, margin, contentWidth) {
+            var pageCount = doc.internal.getNumberOfPages();
+            for (var i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setDrawColor(226,232,240); doc.setLineWidth(0.3);
+                doc.line(margin, 285, margin+contentWidth, 285);
+                doc.setTextColor(148,163,184); doc.setFontSize(8); doc.setFont('helvetica','normal');
+                doc.text('Hisaab Kitaab | Page ' + i + ' of ' + pageCount, pageWidth/2, 290, {align:'center'});
+                doc.text('This is a computer generated statement and does not require signature.', pageWidth/2, 294, {align:'center'});
+            }
         }
 
         // Toast
