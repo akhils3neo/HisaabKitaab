@@ -53,11 +53,11 @@
 </head>
 <body>
     <div class="card">
-        <div class="logo">💳</div>
+        <div class="logo">ðŸ’³</div>
         <div class="app-name">Hisaab Kitaab</div>
 
         <div class="label">Amount Due</div>
-        <div class="amount" id="amt">—</div>
+        <div class="amount" id="amt">â€”</div>
 
         <div class="payee" id="payee"></div>
         <div class="upi-id" id="upiId"></div>
@@ -88,7 +88,7 @@
         var tn = params.get('tn') || 'HisaabKitaab';
 
         if (am) {
-            document.getElementById('amt').textContent = '₹' + parseFloat(am).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('amt').textContent = 'â‚¹' + parseFloat(am).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         if (pn) document.getElementById('payee').textContent = 'Pay to: ' + pn;
         if (pa) document.getElementById('upiId').textContent = pa;
@@ -96,7 +96,6 @@
         else document.getElementById('note').style.display = 'none';
 
         var upiUrl = 'upi://pay?pa=' + encodeURIComponent(pa) +
-                     '&pn=' + encodeURIComponent(pn) +
                      '&am=' + am +
                      '&cu=INR' +
                      '&tn=' + encodeURIComponent(tn);
