@@ -2286,7 +2286,8 @@
                 doc.setFillColor(16,185,129);
                 doc.roundedRect(btnX, btnY, btnW, btnH, 3, 3, 'F');
                 doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-                doc.textWithLink('PAY NOW  ' + formatCurrencyPDF(totalOutstanding), btnX + btnW/2, btnY+9.5, { align:'center', url: upiPayLink });
+                doc.text('PAY NOW  ' + formatCurrencyPDF(totalOutstanding), btnX + btnW/2, btnY+9.5, { align:'center' });
+                doc.link(btnX, btnY, btnW, btnH, { url: upiPayLink });
                 doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
                 doc.text('UPI: ' + appSettings.upiId, btnX, btnY+btnH+5);
                 doc.addImage(qrDataUrl, 'PNG', margin+contentWidth-26, y+1, 24, 24);
@@ -2420,16 +2421,14 @@
                 doc.roundedRect(margin, y, contentWidth, boxH, 4, 4, 'FD');
                 doc.setDrawColor(16,185,129); doc.setLineWidth(0.8);
                 doc.line(margin, y, margin+contentWidth, y);
-                // Clickable PAY NOW button (left side)
                 var btnW = 80; var btnH = 14; var btnX = margin+5; var btnY = y+7;
                 doc.setFillColor(16,185,129);
                 doc.roundedRect(btnX, btnY, btnW, btnH, 3, 3, 'F');
                 doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-                doc.textWithLink('PAY NOW  ' + formatCurrencyPDF(totalOutstanding), btnX + btnW/2, btnY+9.5, { align:'center', url: upiPayLink });
-                // UPI ID below button
+                doc.text('PAY NOW  ' + formatCurrencyPDF(totalOutstanding), btnX + btnW/2, btnY+9.5, { align:'center' });
+                doc.link(btnX, btnY, btnW, btnH, { url: upiPayLink });
                 doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
                 doc.text('UPI: ' + appSettings.upiId, btnX, btnY+btnH+5);
-                // QR code (right side)
                 doc.addImage(qrDataUrl, 'PNG', margin+contentWidth-26, y+1, 24, 24);
                 doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(16,185,129);
                 doc.text('Scan to Pay', margin+contentWidth-26+12, y+27, {align:'center'});
