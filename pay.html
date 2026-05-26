@@ -87,18 +87,22 @@
         var am = params.get('am') || '';
         var tn = params.get('tn') || 'HisaabKitaab';
 
+        // Format amount: remove trailing .00 (GPay is strict about this)
+        var amFloat = parseFloat(am) || 0;
+        var amFormatted = amFloat % 1 === 0 ? String(amFloat) : amFloat.toFixed(2);
+
         if (am) {
-            document.getElementById('amt').textContent = 'â‚¹' + parseFloat(am).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('amt').textContent = 'â‚¹' + amFloat.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         if (pn) document.getElementById('payee').textContent = 'Pay to: ' + pn;
         if (pa) document.getElementById('upiId').textContent = pa;
         if (tn && tn !== 'HisaabKitaab') document.getElementById('note').textContent = 'Note: ' + tn;
         else document.getElementById('note').style.display = 'none';
 
-        var upiUrl = 'upi://pay?pa=' + encodeURIComponent(pa) +
-                     '&am=' + am +
-                     '&cu=INR' +
-                     '&tn=' + encodeURIComponent(tn);
+        // Minimal UPI URL â€” only pa, am, cu (GPay rejects tn with special chars)
+        var upiUrl = 'upi://pay?pa=' + pa +
+                     '&am=' + amFormatted +
+                     '&cu=INR';
 
         var btn = document.getElementById('payBtn');
         btn.href = upiUrl;
@@ -107,7 +111,6 @@
             e.preventDefault();
             document.getElementById('status').textContent = 'Opening UPI app...';
             window.location.href = upiUrl;
-            // If app doesn't open in 2s, show fallback message
             setTimeout(function() {
                 document.getElementById('status').textContent = 'If no app opened, tap the button again.';
                 document.getElementById('status').style.color = '#f59e0b';
