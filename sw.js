@@ -1,7 +1,8 @@
-const CACHE_NAME = 'hisaab-kitaab-v10';
+const CACHE_NAME = 'hisaab-kitaab-v7';
 const urlsToCache = [
   './',
   './index.html',
+  './pay.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -40,7 +41,6 @@ self.addEventListener('fetch', function(event) {
           return response;
         }
         return fetch(event.request).catch(function() {
-          // If offline and page not cached, return the cached index.html
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
           }
