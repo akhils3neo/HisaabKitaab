@@ -2000,7 +2000,6 @@
             var creditorName = getCreditorName(debt.creditorId);
             var note = (debt.notes || 'HisaabKitaab') + '-' + creditorName;
             var upiLink = 'upi://pay?pa=' + encodeURIComponent(appSettings.upiId) +
-                          '&pn=' + encodeURIComponent(appSettings.upiName || appSettings.upiId) +
                           '&am=' + remaining.toFixed(2) +
                           '&cu=INR' +
                           '&tn=' + encodeURIComponent(note.substring(0, 50));
@@ -2014,7 +2013,6 @@
             if (!upiId) { preview.style.display = 'none'; return; }
             preview.style.display = 'block';
             var upiLink = 'upi://pay?pa=' + encodeURIComponent(upiId) +
-                          '&pn=' + encodeURIComponent(upiName || upiId) +
                           '&am=100&cu=INR&tn=HisaabKitaab';
             var canvas = document.getElementById('upiQrPreviewCanvas');
             drawQRToCanvas(upiLink, canvas, 120);
@@ -2053,7 +2051,6 @@
             if (!upiId) { callback(null); return; }
             try {
                 var upiLink = 'upi://pay?pa=' + encodeURIComponent(upiId) +
-                              '&pn=' + encodeURIComponent(upiName) +
                               '&am=' + (amount > 0 ? amount.toFixed(2) : '') +
                               '&cu=INR&tn=' + encodeURIComponent((note || 'HisaabKitaab').substring(0, 50));
                 var canvas = document.createElement('canvas');
@@ -2278,7 +2275,6 @@
             if (qrDataUrl && totalOutstanding > 0) {
                 if (y > 240) { doc.addPage(); y = 30; }
                 var upiPayLink = 'https://akhils3neo.github.io/HisaabKitaab/pay.html?pa=' + encodeURIComponent(appSettings.upiId) +
-                                 '&pn=' + encodeURIComponent(appSettings.upiName || appSettings.upiId) +
                                  '&am=' + totalOutstanding.toFixed(2) +
                                  '&cu=INR&tn=HisaabKitaab';
                 var boxH = 28;
@@ -2417,7 +2413,6 @@
             if (qrDataUrl && totalOutstanding > 0) {
                 if (y > 240) { doc.addPage(); y = 30; }
                 var upiPayLink = 'https://akhils3neo.github.io/HisaabKitaab/pay.html?pa=' + encodeURIComponent(appSettings.upiId) +
-                                 '&pn=' + encodeURIComponent(appSettings.upiName || appSettings.upiId) +
                                  '&am=' + totalOutstanding.toFixed(2) +
                                  '&cu=INR&tn=HisaabKitaab';
                 var boxH = 28;
